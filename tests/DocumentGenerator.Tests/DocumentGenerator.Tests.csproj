@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DocumentGenerator.Application\DocumentGenerator.Application.csproj" />
+    <ProjectReference Include="..\..\src\DocumentGenerator.Domain\DocumentGenerator.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

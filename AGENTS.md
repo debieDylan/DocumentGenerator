@@ -1426,6 +1426,18 @@ Use sample configuration only.
 
 
 
+\# Line Endings
+
+
+
+All text files in this repository must use CRLF line endings.
+
+
+
+\---
+
+
+
 \# Final Rule
 
 

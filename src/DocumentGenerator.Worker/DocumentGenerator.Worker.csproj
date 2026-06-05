@@ -1,13 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DocumentGenerator.Application\DocumentGenerator.Application.csproj" />
-    <ProjectReference Include="..\DocumentGenerator.Contracts\DocumentGenerator.Contracts.csproj" />
     <ProjectReference Include="..\DocumentGenerator.Infrastructure\DocumentGenerator.Infrastructure.csproj" />
   </ItemGroup>
-
 </Project>

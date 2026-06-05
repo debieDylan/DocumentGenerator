@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocumentGenerator.Application\DocumentGenerator.Application.csproj" />
+    <ProjectReference Include="..\DocumentGenerator.Domain\DocumentGenerator.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

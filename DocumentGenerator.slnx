@@ -4,4 +4,10 @@
     <File Path="Directory.Packages.props" />
   </Folder>
   <Project Path="src/DocumentGenerator.Api/DocumentGenerator.Api.csproj" />
+  <Project Path="src/DocumentGenerator.Application/DocumentGenerator.Application.csproj" />
+  <Project Path="src/DocumentGenerator.Contracts/DocumentGenerator.Contracts.csproj" />
+  <Project Path="src/DocumentGenerator.Domain/DocumentGenerator.Domain.csproj" />
+  <Project Path="src/DocumentGenerator.Infrastructure/DocumentGenerator.Infrastructure.csproj" />
+  <Project Path="src/DocumentGenerator.Worker/DocumentGenerator.Worker.csproj" />
+  <Project Path="tests/DocumentGenerator.Tests/DocumentGenerator.Tests.csproj" />
 </Solution>
