@@ -1,8 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CA1515;CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DocumentGenerator.Application\DocumentGenerator.Application.csproj" />
     <ProjectReference Include="..\..\src\DocumentGenerator.Domain\DocumentGenerator.Domain.csproj" />
+    <ProjectReference Include="..\..\src\DocumentGenerator.Infrastructure\DocumentGenerator.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

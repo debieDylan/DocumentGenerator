@@ -5,15 +5,22 @@ using DocumentGenerator.Application.Documents.SubmitDocumentGeneration;
 using DocumentGenerator.Contracts.Documents;
 using DocumentGenerator.Domain.Jobs;
 using DocumentGenerator.Infrastructure.DependencyInjection;
+using DocumentGenerator.Infrastructure.Persistence;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddJsonConsole();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
-builder.Services.AddDocumentGenerator();
+builder.Services.AddDocumentGenerator(builder.Configuration);
 
 WebApplication app = builder.Build();
+
+if (args.Contains("--migrate", StringComparer.Ordinal))
+{
+    await app.Services.GetRequiredService<PostgresMigrationRunner>().ApplyAsync(CancellationToken.None);
+    return;
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -99,7 +106,7 @@ documents.MapGet(
         return Results.Ok(new DownloadUrlResponse(response.Url, response.ExpiresAt));
     });
 
-app.Run();
+await app.RunAsync();
 
 static OutputFormat MapOutputFormat(OutputFormatDto format) =>
     format switch

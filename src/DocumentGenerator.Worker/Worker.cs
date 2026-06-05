@@ -6,9 +6,12 @@ namespace DocumentGenerator.Worker;
 
 internal sealed class Worker(
     IDocumentQueue queue,
+    IClock clock,
     IServiceScopeFactory scopeFactory,
     ILogger<Worker> logger) : BackgroundService
 {
+    private readonly string _workerId = string.Concat(Environment.MachineName, "-", Guid.NewGuid().ToString("N"));
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -30,7 +33,12 @@ internal sealed class Worker(
                     logger.LogInformation("Processing document job {JobId}", jobId.Value);
                 }
 
-                await handler.HandleAsync(jobId.Value, stoppingToken);
+                ProcessDocumentGenerationCommand command = new(
+                    jobId.Value,
+                    _workerId,
+                    clock.UtcNow.AddMinutes(5));
+
+                await handler.HandleAsync(command, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {

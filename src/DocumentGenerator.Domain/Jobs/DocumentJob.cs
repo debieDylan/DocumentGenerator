@@ -11,7 +11,17 @@ public sealed class DocumentJob
         OutputFormat outputFormat,
         string inputDataHash,
         string? idempotencyKey,
-        DateTimeOffset createdAt)
+        DateTimeOffset createdAt,
+        DateTimeOffset? updatedAt = null,
+        DocumentJobStatus status = DocumentJobStatus.Pending,
+        DocumentArtifact? artifact = null,
+        string? failureReason = null,
+        DateTimeOffset? startedAt = null,
+        DateTimeOffset? completedAt = null,
+        DateTimeOffset? failedAt = null,
+        string? claimedBy = null,
+        DateTimeOffset? claimExpiresAt = null,
+        int retryCount = 0)
     {
         Id = id;
         TemplateId = templateId;
@@ -20,7 +30,16 @@ public sealed class DocumentJob
         InputDataHash = inputDataHash;
         IdempotencyKey = idempotencyKey;
         CreatedAt = createdAt;
-        Status = DocumentJobStatus.Pending;
+        UpdatedAt = updatedAt ?? createdAt;
+        Status = status;
+        Artifact = artifact;
+        FailureReason = failureReason;
+        StartedAt = startedAt;
+        CompletedAt = completedAt;
+        FailedAt = failedAt;
+        ClaimedBy = claimedBy;
+        ClaimExpiresAt = claimExpiresAt;
+        RetryCount = retryCount;
     }
 
     public DocumentJobId Id { get; }
@@ -43,9 +62,29 @@ public sealed class DocumentJob
 
     public DateTimeOffset CreatedAt { get; }
 
+    public DateTimeOffset UpdatedAt { get; private set; }
+
     public DateTimeOffset? StartedAt { get; private set; }
 
     public DateTimeOffset? CompletedAt { get; private set; }
+
+    public DateTimeOffset? FailedAt { get; private set; }
+
+    public string? ClaimedBy { get; private set; }
+
+    public DateTimeOffset? ClaimExpiresAt { get; private set; }
+
+    public int RetryCount { get; private set; }
+
+    public void MarkClaimed(string workerId, DateTimeOffset claimExpiresAt, DateTimeOffset claimedAt)
+    {
+        Status = DocumentJobStatus.Processing;
+        ClaimedBy = workerId;
+        ClaimExpiresAt = claimExpiresAt;
+        RetryCount++;
+        StartedAt ??= claimedAt;
+        UpdatedAt = claimedAt;
+    }
 
     public void MarkProcessing(DateTimeOffset startedAt)
     {
@@ -56,6 +95,7 @@ public sealed class DocumentJob
 
         Status = DocumentJobStatus.Processing;
         StartedAt ??= startedAt;
+        UpdatedAt = startedAt;
     }
 
     public void MarkCompleted(DocumentArtifact artifact, DateTimeOffset completedAt)
@@ -63,13 +103,19 @@ public sealed class DocumentJob
         Artifact = artifact;
         CompletedAt = completedAt;
         FailureReason = null;
+        ClaimedBy = null;
+        ClaimExpiresAt = null;
         Status = DocumentJobStatus.Completed;
+        UpdatedAt = completedAt;
     }
 
     public void MarkFailed(string failureReason, DateTimeOffset failedAt)
     {
         FailureReason = failureReason;
-        CompletedAt = failedAt;
+        FailedAt = failedAt;
+        ClaimedBy = null;
+        ClaimExpiresAt = null;
         Status = DocumentJobStatus.Failed;
+        UpdatedAt = failedAt;
     }
 }

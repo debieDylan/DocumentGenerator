@@ -11,7 +11,19 @@ public interface IDocumentJobRepository
 
     Task<DocumentJob?> GetByIdAsync(DocumentJobId jobId, CancellationToken cancellationToken);
 
-    Task<IdempotencyRecord?> GetIdempotencyRecordAsync(string key, CancellationToken cancellationToken);
+    Task<Result<SubmitDocumentJobResult>> SubmitAsync(
+        DocumentJob job,
+        IdempotencyRecord? idempotencyRecord,
+        CancellationToken cancellationToken);
+}
 
-    Task AddIdempotencyRecordAsync(IdempotencyRecord record, CancellationToken cancellationToken);
+public sealed record SubmitDocumentJobResult(DocumentJob Job, bool ReusedExistingJob);
+
+public interface IDocumentJobClaimer
+{
+    Task<Result<DocumentJob>> TryClaimJobAsync(
+        DocumentJobId jobId,
+        string workerId,
+        DateTimeOffset claimExpiresAt,
+        CancellationToken cancellationToken);
 }

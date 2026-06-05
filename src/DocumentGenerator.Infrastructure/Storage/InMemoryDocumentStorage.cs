@@ -18,6 +18,7 @@ public sealed class InMemoryDocumentStorage : IDocumentStorage
         }
 
         return new DocumentArtifact(
+            DocumentArtifactId.New(),
             job.Id,
             new Uri($"memory://documents/{job.Id}/artifact{GetExtension(job.OutputFormat)}"),
             job.OutputFormat,

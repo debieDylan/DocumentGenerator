@@ -31,29 +31,6 @@ public sealed class SubmitDocumentGenerationHandler(
 
         string payloadHash = ComputePayloadHash(command);
 
-        if (!string.IsNullOrWhiteSpace(command.IdempotencyKey))
-        {
-            IdempotencyRecord? existingRecord = await jobs.GetIdempotencyRecordAsync(
-                command.IdempotencyKey,
-                cancellationToken);
-
-            if (existingRecord is not null)
-            {
-                if (!string.Equals(existingRecord.PayloadHash, payloadHash, StringComparison.Ordinal))
-                {
-                    return Result<SubmitDocumentGenerationResponse>.Failure(
-                        new Error("idempotency.conflict", "The idempotency key was already used with a different payload."));
-                }
-
-                DocumentJob? existingJob = await jobs.GetByIdAsync(existingRecord.JobId, cancellationToken);
-                if (existingJob is not null)
-                {
-                    return Result<SubmitDocumentGenerationResponse>.Success(
-                        new SubmitDocumentGenerationResponse(existingJob.Id, existingJob.Status, true));
-                }
-            }
-        }
-
         DocumentJob job = new(
             DocumentJobId.New(),
             command.TemplateId,
@@ -63,18 +40,29 @@ public sealed class SubmitDocumentGenerationHandler(
             command.IdempotencyKey,
             clock.UtcNow);
 
-        await jobs.AddAsync(job, cancellationToken);
-
+        IdempotencyRecord? record = null;
         if (!string.IsNullOrWhiteSpace(command.IdempotencyKey))
         {
-            IdempotencyRecord record = new(command.IdempotencyKey, payloadHash, job.Id, clock.UtcNow);
-            await jobs.AddIdempotencyRecordAsync(record, cancellationToken);
+            record = new IdempotencyRecord(command.IdempotencyKey, payloadHash, job.Id, clock.UtcNow);
         }
 
-        await queue.EnqueueAsync(job.Id, cancellationToken);
+        Result<SubmitDocumentJobResult> submission = await jobs.SubmitAsync(job, record, cancellationToken);
+        if (submission.IsFailure)
+        {
+            return Result<SubmitDocumentGenerationResponse>.Failure(submission.Error!);
+        }
+
+        SubmitDocumentJobResult submitted = submission.Value!;
+        if (!submitted.ReusedExistingJob)
+        {
+            await queue.EnqueueAsync(submitted.Job.Id, cancellationToken);
+        }
 
         return Result<SubmitDocumentGenerationResponse>.Success(
-            new SubmitDocumentGenerationResponse(job.Id, job.Status, false));
+            new SubmitDocumentGenerationResponse(
+                submitted.Job.Id,
+                submitted.Job.Status,
+                submitted.ReusedExistingJob));
     }
 
     private static string ComputePayloadHash(SubmitDocumentGenerationCommand command)
